@@ -82,19 +82,6 @@ int main()
 }
 |}
 
-let mutex_timed_lock_code = {|
-#include <pthread.h>
-#include <time.h>
-
-int main()
-{
-   pthread_mutex_t m;
-   struct timespec ts;
-   pthread_mutex_timedlock(&m, &ts);
-   return 0;
-}
-|}
-
 let fdatasync_code = {|
 #include <unistd.h>
 
@@ -208,7 +195,6 @@ let () =
         ; "SO_NOSIGPIPE"     , so_nosigpipe_code     , []
         ; "FDATASYNC"        , fdatasync_code        , []
         ; "RECVMMSG"         , recvmmsg_code         , []
-        ; "MUTEX_TIMED_LOCK" , mutex_timed_lock_code , ["-lpthread"]
         ; "THREAD_CPUTIME"   , thread_cputime_code   , ["-lpthread"]
         ; "PTHREAD_NP"       , pthread_np            , ["-lpthread"]
         ; "MKOSTEMP"         , mkostemp_code         , []
