@@ -7,5 +7,5 @@
  (files (config.h as config.h) (thread_id.h as thread_id.h)
   (rt-flags as rt-flags)))
 
-(library (name config_h) (public_name config_h)
+(library (name config_h) (public_name jst-config)
  (preprocess no_preprocessing))
