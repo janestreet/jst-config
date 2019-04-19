@@ -155,7 +155,8 @@ let () =
                                 | "true" | "!false" -> true
                                 | "false" | "!true" -> false
                                 | _ -> assert false),
-      " true if Base.Int63.t is selected at runtime, false if at compiler time" ]
+      " true if Base.Int63.t is selected at runtime, false if at compiler time"
+    ]
   in
   C.main ~args ~name:"config_h" (fun c ->
     let posix_timers =
@@ -202,9 +203,14 @@ let () =
     in
 
     let rlimit_vars =
-      C.C_define.import c ~includes:["sys/resource.h"]
-        [ "RLIMIT_AS"  , Switch
-        ; "RLIMIT_NICE", Switch
+      if C.c_test c "#include <sys/resource.h>\nint main() { return 0; }" then
+        C.C_define.import c ~includes:["sys/resource.h"]
+          [ "RLIMIT_AS"  , Switch
+          ; "RLIMIT_NICE", Switch
+          ]
+      else
+        [ "RLIMIT_AS"  , Switch false
+        ; "RLIMIT_NICE", Switch false
         ]
     in
 
