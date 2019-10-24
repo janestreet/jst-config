@@ -14,7 +14,7 @@ depends: [
   "base"
   "ppx_assert"
   "stdio"
-  "dune"       {build & >= "1.5.1"}
+  "dune"       {>= "1.5.1"}
 ]
 synopsis: "Compile-time configuration for Jane Street libraries"
 description: "
