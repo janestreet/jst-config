@@ -144,6 +144,15 @@ int main()
 }
 |}
 
+let readdir_dtype_code = {|
+#include <dirent.h>
+int main()
+{
+  int i = DT_BLK;
+  return 0;
+}
+|}
+
 let () =
   C.main ~name:"config_h" (fun c ->
     let posix_timers =
@@ -186,6 +195,7 @@ let () =
         ; "THREAD_CPUTIME"   , thread_cputime_code   , ["-lpthread"]
         ; "PTHREAD_NP"       , pthread_np            , ["-lpthread"]
         ; "MKOSTEMP"         , mkostemp_code         , []
+        ; "READDIR_DTYPE"    , readdir_dtype_code    , []
         ]
     in
 
