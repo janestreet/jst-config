@@ -1,6 +1,16 @@
 open Base
 module C = Configurator.V1
 
+let mingw_code = {|
+#include <stdio.h>
+
+int main()
+{
+  const char* info = __mingw_get_crt_info ();
+  return 0;
+}
+|}
+
 let eventfd_code = {|
 #include <sys/eventfd.h>
 
@@ -155,8 +165,12 @@ int main()
 
 let () =
   C.main ~name:"config_h" (fun c ->
+    let mingw = C.c_test c mingw_code in
+
     let posix_timers =
-      if C.c_test c posix_timers_code ~link_flags:["-lrt"] then
+      if mingw then
+        Not_available
+      else if C.c_test c posix_timers_code ~link_flags:["-lrt"] then
         Available { need_lrt = true }
       else if C.c_test c posix_timers_code then
         Available { need_lrt = false }
