@@ -28,6 +28,17 @@ type posix_timers =
   | Available of { need_lrt : bool }
   | Not_available
 
+let timespec_code = {|
+#include <time.h>
+
+int main()
+{
+  struct timespec ts;
+  timespec_get(&ts, TIME_UTC);
+  return 0;
+}
+|}
+
 let timerfd_code = {|
 #include <sys/timerfd.h>
 
@@ -183,19 +194,20 @@ let () =
     in
 
     let simple_vars =
-      List.map ~f:(fun (v, code, link_flags) ->
-        (v, C.C_define.Value.Switch (C.c_test c code ~link_flags)))
-        [ "EVENTFD"          , eventfd_code          , []
-        ; "TIMERFD"          , timerfd_code          , []
-        ; "WORDEXP"          , wordexp_code          , []
-        ; "MSG_NOSIGNAL"     , msg_nosignal_code     , []
-        ; "SO_NOSIGPIPE"     , so_nosigpipe_code     , []
-        ; "FDATASYNC"        , fdatasync_code        , []
-        ; "RECVMMSG"         , recvmmsg_code         , []
-        ; "THREAD_CPUTIME"   , thread_cputime_code   , ["-lpthread"]
-        ; "PTHREAD_NP"       , pthread_np            , ["-lpthread"]
-        ; "MKOSTEMP"         , mkostemp_code         , []
-        ; "READDIR_DTYPE"    , readdir_dtype_code    , []
+      List.map ~f:(fun (v, code, c_flags, link_flags) ->
+        (v, C.C_define.Value.Switch (C.c_test c code ~c_flags ~link_flags)))
+        [ "EVENTFD"        , eventfd_code        , []           , []
+        ; "TIMESPEC"       , timespec_code       , ["-std=c11"] , []
+        ; "TIMERFD"        , timerfd_code        , []           , []
+        ; "WORDEXP"        , wordexp_code        , []           , []
+        ; "MSG_NOSIGNAL"   , msg_nosignal_code   , []           , []
+        ; "SO_NOSIGPIPE"   , so_nosigpipe_code   , []           , []
+        ; "FDATASYNC"      , fdatasync_code      , []           , []
+        ; "RECVMMSG"       , recvmmsg_code       , []           , []
+        ; "THREAD_CPUTIME" , thread_cputime_code , []           , ["-lpthread"]
+        ; "PTHREAD_NP"     , pthread_np          , []           , ["-lpthread"]
+        ; "MKOSTEMP"       , mkostemp_code       , []           , []
+        ; "READDIR_DTYPE"  , readdir_dtype_code  , []           , []
         ]
     in
 
