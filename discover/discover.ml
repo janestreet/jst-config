@@ -167,18 +167,7 @@ int main()
 let () =
   C.main ~name:"config_h" (fun c ->
     let posix_timers =
-      if C.c_test c posix_timers_code ~link_flags:["-lrt"] then
-        Available { need_lrt = true }
-      else if C.c_test c posix_timers_code then
-        Available { need_lrt = false }
-      else
-        Not_available
-    in
-
-    let posix_timers, need_lrt =
-      match posix_timers with
-      | Available { need_lrt } -> true, need_lrt
-      | Not_available         -> false, false
+      C.c_test c posix_timers_code
     in
 
     let thread_id_method =
@@ -246,11 +235,5 @@ let () =
       List.map vars ~f:(fun (name, v) -> ("JSC_" ^ name, v))
     in
 
-    C.C_define.gen_header_file c ~fname:"config.h" jsc_vars;
-
-    let rt_flags : Sexp.t =
-      if need_lrt
-      then List [Atom "-lrt"]
-      else List []
-    in
-    Stdio.Out_channel.write_all "rt-flags" ~data:(Sexp.to_string rt_flags))
+    C.C_define.gen_header_file c ~fname:"config.h" jsc_vars
+  )
