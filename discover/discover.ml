@@ -180,8 +180,7 @@ let () =
     let linux =
       let system = C.ocaml_config_var_exn c "system" in (* TODO: "uname -s" should be used instead *)
       (* Possible values for this field: linux, linux_elf, linux_eabi, ... *)
-      String.is_prefix system ~prefix:"linux" ||
-      String.equal system "elf"
+      String.is_prefix system ~prefix:"linux" || String.equal system "elf"
     in
 
     let simple_vars =
