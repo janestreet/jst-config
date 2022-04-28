@@ -20,6 +20,7 @@ int main()
   clock_gettime(CLOCK_REALTIME, &ts);
   clock_settime(CLOCK_REALTIME, &ts);
   clock_getres(CLOCK_REALTIME, &ts);
+  clock_getcpuclockid(0, CLOCK_REALTIME);
   return 0;
 }
 |}
