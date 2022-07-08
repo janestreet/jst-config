@@ -24,8 +24,18 @@ int main()
 }
 |}
 
+let clock_getcpuclockid_code = {|
+#include <time.h>
+
+int main()
+{
+  clock_getcpuclockid(0, CLOCK_REALTIME);
+  return 0;
+}
+|}
+
 type posix_timers =
-  | Available of { need_lrt : bool }
+  | Available of { need_lrt : bool; getcpuclockid : bool }
   | Not_available
 
 let timespec_code = {|
@@ -169,7 +179,9 @@ let () =
     let posix_timers =
       C.c_test c posix_timers_code
     in
-
+    let clock_getcpuclockid =
+      C.c_test c clock_getcpuclockid_code
+    in
     let thread_id_method =
       let thread_id_header = Caml.Filename.concat (Caml.Sys.getcwd ()) "thread_id.h" in
       List.find [1; 2] ~f:(fun thread_id_method ->
@@ -225,10 +237,12 @@ let () =
         [ rlimit_vars
         ; ocaml_vars
         ; simple_vars
-        ; [ "POSIX_TIMERS"    , Switch posix_timers
-          ; "THREAD_ID_METHOD", Int thread_id_method
-          ; "LINUX_EXT"       , Switch linux
-          ]
+        ; [
+          "POSIX_TIMERS"    , Switch posix_timers
+        ; "CLOCK_GETCPUCLOCKID"    , Switch clock_getcpuclockid
+        ; "THREAD_ID_METHOD", Int thread_id_method
+        ; "LINUX_EXT"       , Switch linux
+        ]
         ]
     in
 
