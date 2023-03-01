@@ -183,7 +183,7 @@ let () =
       C.c_test c clock_getcpuclockid_code
     in
     let thread_id_method =
-      let thread_id_header = Caml.Filename.concat (Caml.Sys.getcwd ()) "thread_id.h" in
+      let thread_id_header = Stdlib.Filename.concat (Stdlib.Sys.getcwd ()) "thread_id.h" in
       List.find [1; 2] ~f:(fun thread_id_method ->
         C.c_test c (thread_id_code ~thread_id_method ~thread_id_header))
       |> Option.value ~default:(-1)
