@@ -7,6 +7,7 @@
 #if JSC_THREAD_ID_METHOD == 1
 
 #include <sys/syscall.h>
+#include <unistd.h>
 
 #define GET_THREAD_ID syscall(SYS_gettid)
 
