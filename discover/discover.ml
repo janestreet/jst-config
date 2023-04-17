@@ -136,6 +136,7 @@ int main () {
 |}
 
 let mkostemp_code = {|
+#define _GNU_SOURCE
 #include <stdlib.h>
 
 int main () {
