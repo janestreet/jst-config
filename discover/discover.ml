@@ -1,7 +1,8 @@
 open Base
 module C = Configurator.V1
 
-let eventfd_code = {|
+let eventfd_code =
+  {|
 #include <sys/eventfd.h>
 
 int main()
@@ -10,8 +11,10 @@ int main()
   return 0;
 }
 |}
+;;
 
-let posix_timers_code = {|
+let posix_timers_code =
+  {|
 #include <time.h>
 
 int main()
@@ -23,8 +26,10 @@ int main()
   return 0;
 }
 |}
+;;
 
-let clock_getcpuclockid_code = {|
+let clock_getcpuclockid_code =
+  {|
 #include <time.h>
 
 int main()
@@ -33,12 +38,17 @@ int main()
   return 0;
 }
 |}
+;;
 
 type posix_timers =
-  | Available of { need_lrt : bool; getcpuclockid : bool }
+  | Available of
+      { need_lrt : bool
+      ; getcpuclockid : bool
+      }
   | Not_available
 
-let timespec_code = {|
+let timespec_code =
+  {|
 #include <time.h>
 
 int main()
@@ -48,8 +58,10 @@ int main()
   return 0;
 }
 |}
+;;
 
-let timerfd_code = {|
+let timerfd_code =
+  {|
 #include <sys/timerfd.h>
 
 int main()
@@ -58,8 +70,10 @@ int main()
   return 0;
 }
 |}
+;;
 
-let wordexp_code = {|
+let wordexp_code =
+  {|
 #include <wordexp.h>
 
 int main()
@@ -69,8 +83,11 @@ int main()
   return 0;
 }
 |}
+;;
 
-let thread_id_code ~thread_id_method ~thread_id_header = Printf.sprintf {|
+let thread_id_code ~thread_id_method ~thread_id_header =
+  Printf.sprintf
+    {|
 #define JSC_THREAD_ID_METHOD %d
 #include "%s"
 
@@ -79,9 +96,13 @@ int main ()
   GET_THREAD_ID;
   return 0;
 }
-|} thread_id_method thread_id_header
+|}
+    thread_id_method
+    thread_id_header
+;;
 
-let msg_nosignal_code = {|
+let msg_nosignal_code =
+  {|
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -91,8 +112,10 @@ int main()
    return 0;
 }
 |}
+;;
 
-let so_nosigpipe_code = {|
+let so_nosigpipe_code =
+  {|
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -102,6 +125,7 @@ int main()
    return 0;
 }
 |}
+;;
 
 let fdatasync_code = {|
 #include <unistd.h>
@@ -113,7 +137,8 @@ int main()
 }
 |}
 
-let thread_cputime_code = {|
+let thread_cputime_code =
+  {|
 #include <pthread.h>
 #include <time.h>
 
@@ -124,8 +149,10 @@ int main()
    return 0;
 }
 |}
+;;
 
-let recvmmsg_code = {|
+let recvmmsg_code =
+  {|
 #define _GNU_SOURCE
 #include <sys/socket.h>
 
@@ -134,8 +161,10 @@ int main () {
   return 0;
 }
 |}
+;;
 
-let mkostemp_code = {|
+let mkostemp_code =
+  {|
 #define _GNU_SOURCE
 #include <stdlib.h>
 
@@ -144,8 +173,10 @@ int main () {
   return 0;
 }
 |}
+;;
 
-let pthread_np = {|
+let pthread_np =
+  {|
 #define _GNU_SOURCE
 #include <pthread.h>
 #include <sys/types.h>
@@ -165,8 +196,10 @@ int main()
   return 0;
 }
 |}
+;;
 
-let readdir_dtype_code = {|
+let readdir_dtype_code =
+  {|
 #include <dirent.h>
 int main()
 {
@@ -174,82 +207,71 @@ int main()
   return 0;
 }
 |}
+;;
 
 let () =
   C.main ~name:"config_h" (fun c ->
-    let posix_timers =
-      C.c_test c posix_timers_code
-    in
-    let clock_getcpuclockid =
-      C.c_test c clock_getcpuclockid_code
-    in
+    let posix_timers = C.c_test c posix_timers_code in
+    let clock_getcpuclockid = C.c_test c clock_getcpuclockid_code in
     let thread_id_method =
-      let thread_id_header = Stdlib.Filename.concat (Stdlib.Sys.getcwd ()) "thread_id.h" in
-      List.find [1; 2] ~f:(fun thread_id_method ->
+      let thread_id_header =
+        Stdlib.Filename.concat (Stdlib.Sys.getcwd ()) "thread_id.h"
+      in
+      List.find [ 1; 2 ] ~f:(fun thread_id_method ->
         C.c_test c (thread_id_code ~thread_id_method ~thread_id_header))
       |> Option.value ~default:(-1)
     in
-
     let linux =
-      let system = C.ocaml_config_var_exn c "system" in (* TODO: "uname -s" should be used instead *)
+      let system = C.ocaml_config_var_exn c "system" in
+      (* TODO: "uname -s" should be used instead *)
       (* Possible values for this field: linux, linux_elf, linux_eabi, ... *)
       String.is_prefix system ~prefix:"linux" || String.equal system "elf"
     in
-
     let simple_vars =
-      List.map ~f:(fun (v, code, c_flags, link_flags) ->
-        (v, C.C_define.Value.Switch (C.c_test c code ~c_flags ~link_flags)))
-        [ "EVENTFD"        , eventfd_code        , []           , []
-        ; "TIMESPEC"       , timespec_code       , ["-std=c11"] , []
-        ; "TIMERFD"        , timerfd_code        , []           , []
-        ; "WORDEXP"        , wordexp_code        , []           , []
-        ; "MSG_NOSIGNAL"   , msg_nosignal_code   , []           , []
-        ; "SO_NOSIGPIPE"   , so_nosigpipe_code   , []           , []
-        ; "FDATASYNC"      , fdatasync_code      , []           , []
-        ; "RECVMMSG"       , recvmmsg_code       , []           , []
-        ; "THREAD_CPUTIME" , thread_cputime_code , []           , ["-lpthread"]
-        ; "PTHREAD_NP"     , pthread_np          , []           , ["-lpthread"]
-        ; "MKOSTEMP"       , mkostemp_code       , []           , []
-        ; "READDIR_DTYPE"  , readdir_dtype_code  , []           , []
+      List.map
+        ~f:(fun (v, code, c_flags, link_flags) ->
+          v, C.C_define.Value.Switch (C.c_test c code ~c_flags ~link_flags))
+        [ "EVENTFD", eventfd_code, [], []
+        ; "TIMESPEC", timespec_code, [ "-std=c11" ], []
+        ; "TIMERFD", timerfd_code, [], []
+        ; "WORDEXP", wordexp_code, [], []
+        ; "MSG_NOSIGNAL", msg_nosignal_code, [], []
+        ; "SO_NOSIGPIPE", so_nosigpipe_code, [], []
+        ; "FDATASYNC", fdatasync_code, [], []
+        ; "RECVMMSG", recvmmsg_code, [], []
+        ; "THREAD_CPUTIME", thread_cputime_code, [], [ "-lpthread" ]
+        ; "PTHREAD_NP", pthread_np, [], [ "-lpthread" ]
+        ; "MKOSTEMP", mkostemp_code, [], []
+        ; "READDIR_DTYPE", readdir_dtype_code, [], []
         ]
     in
-
     let rlimit_vars =
-      if C.c_test c "#include <sys/resource.h>\nint main() { return 0; }" then
-        C.C_define.import c ~includes:["sys/resource.h"]
-          [ "RLIMIT_AS"  , Switch
-          ; "RLIMIT_NICE", Switch
-          ]
-      else
-        [ "RLIMIT_AS"  , Switch false
-        ; "RLIMIT_NICE", Switch false
-        ]
+      if C.c_test c "#include <sys/resource.h>\nint main() { return 0; }"
+      then
+        C.C_define.import
+          c
+          ~includes:[ "sys/resource.h" ]
+          [ "RLIMIT_AS", Switch; "RLIMIT_NICE", Switch ]
+      else [ "RLIMIT_AS", Switch false; "RLIMIT_NICE", Switch false ]
     in
-
     let ocaml_vars =
-      C.C_define.import c ~includes:["caml/config.h"]
-        [ "ARCH_BIG_ENDIAN", Switch
-        ; "ARCH_SIXTYFOUR" , Switch
-        ]
+      C.C_define.import
+        c
+        ~includes:[ "caml/config.h" ]
+        [ "ARCH_BIG_ENDIAN", Switch; "ARCH_SIXTYFOUR", Switch ]
     in
-
     let vars =
       List.concat
         [ rlimit_vars
         ; ocaml_vars
         ; simple_vars
-        ; [
-          "POSIX_TIMERS"    , Switch posix_timers
-        ; "CLOCK_GETCPUCLOCKID"    , Switch clock_getcpuclockid
-        ; "THREAD_ID_METHOD", Int thread_id_method
-        ; "LINUX_EXT"       , Switch linux
-        ]
+        ; [ "POSIX_TIMERS", Switch posix_timers
+          ; "CLOCK_GETCPUCLOCKID", Switch clock_getcpuclockid
+          ; "THREAD_ID_METHOD", Int thread_id_method
+          ; "LINUX_EXT", Switch linux
+          ]
         ]
     in
-
-    let jsc_vars =
-      List.map vars ~f:(fun (name, v) -> ("JSC_" ^ name, v))
-    in
-
-    C.C_define.gen_header_file c ~fname:"config.h" jsc_vars
-  )
+    let jsc_vars = List.map vars ~f:(fun (name, v) -> "JSC_" ^ name, v) in
+    C.C_define.gen_header_file c ~fname:"config.h" jsc_vars)
+;;
