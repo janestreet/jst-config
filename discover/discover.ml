@@ -101,6 +101,19 @@ int main ()
     thread_id_header
 ;;
 
+let memfd_code =
+  {|
+#define _GNU_SOURCE
+#include <sys/mman.h>
+
+int main()
+{
+   memfd_create("foo", 0);
+   return 0;
+}
+|}
+;;
+
 let msg_nosignal_code =
   {|
 #include <sys/types.h>
@@ -235,6 +248,7 @@ let () =
         ; "TIMESPEC", timespec_code, [ "-std=c11" ], []
         ; "TIMERFD", timerfd_code, [], []
         ; "WORDEXP", wordexp_code, [], []
+        ; "MEMFD", memfd_code, [], []
         ; "MSG_NOSIGNAL", msg_nosignal_code, [], []
         ; "SO_NOSIGPIPE", so_nosigpipe_code, [], []
         ; "FDATASYNC", fdatasync_code, [], []
