@@ -140,7 +140,8 @@ int main()
 |}
 ;;
 
-let fdatasync_code = {|
+let fdatasync_code =
+  {|
 #include <unistd.h>
 
 int main()
@@ -149,6 +150,7 @@ int main()
   return 0;
 }
 |}
+;;
 
 let thread_cputime_code =
   {|
