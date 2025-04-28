@@ -13,6 +13,21 @@ int main()
 |}
 ;;
 
+let fallocate_code =
+  {|
+#define _GNU_SOURCE
+#include <fcntl.h>
+
+int main()
+{
+   fallocate(0, FALLOC_FL_PUNCH_HOLE, 0, 0);  // since 2.6.38
+   fallocate(0, FALLOC_FL_COLLAPSE_RANGE, 0, 0);  // since 3.15
+   fallocate(0, FALLOC_FL_INSERT_RANGE, 0, 0);  // since 4.1
+   return 0;
+}
+|}
+;;
+
 let posix_timers_code =
   {|
 #include <time.h>
@@ -247,6 +262,7 @@ let () =
         ~f:(fun (v, code, c_flags, link_flags) ->
           v, C.C_define.Value.Switch (C.c_test c code ~c_flags ~link_flags))
         [ "EVENTFD", eventfd_code, [], []
+        ; "FALLOCATE", fallocate_code, [], []
         ; "TIMESPEC", timespec_code, [ "-std=c11" ], []
         ; "TIMERFD", timerfd_code, [], []
         ; "WORDEXP", wordexp_code, [], []
