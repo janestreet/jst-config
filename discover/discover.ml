@@ -292,6 +292,7 @@ let () =
         ~includes:[ "caml/config.h" ]
         [ "ARCH_BIG_ENDIAN", Switch; "ARCH_SIXTYFOUR", Switch ]
     in
+    let arch_amd64 = String.(C.ocaml_config_var_exn c "architecture" = "amd64") in
     let vars =
       List.concat
         [ rlimit_vars
@@ -301,6 +302,7 @@ let () =
           ; "CLOCK_GETCPUCLOCKID", Switch clock_getcpuclockid
           ; "THREAD_ID_METHOD", Int thread_id_method
           ; "LINUX_EXT", Switch linux
+          ; "ARCH_AMD64", Switch arch_amd64
           ]
         ]
     in
