@@ -18,6 +18,9 @@ depends: [
   "dune-configurator"
 ]
 available: arch != "x86_32"
+conflicts: [
+  "oxcaml-compiler" {< "5.2.0minus39"}
+]
 synopsis: "Compile-time configuration for Jane Street libraries"
 description: "
 Defines compile-time constants used in Jane Street libraries such as Base, Core, and
