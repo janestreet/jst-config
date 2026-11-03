@@ -4,7 +4,7 @@
   (:first_dep ../discover/discover.exe)
   thread_id.h)
  (action
-  (run %{first_dep})))
+  (bash %{first_dep})))
 
 (install
  (section lib)
